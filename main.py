@@ -46,62 +46,70 @@ st.markdown("""
 st.markdown('<h1 class="main-header">🌍 Global Sustainable Energy Analytics Dashboard</h1>', unsafe_allow_html=True)
 st.markdown("### Explore sustainable energy trends, predict future patterns, and discover insights from global data (2000-2020)")
 
-# File upload
+# File upload function (without caching)
 @st.cache_data
-def load_data():
-    """Load and cache the dataset"""
+def process_uploaded_data(uploaded_file):
+    """Process and cache the uploaded dataset"""
     try:
-        # You can upload the file through Streamlit or place it in the same directory
-        uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
-        
-        # Add sample dataset download button
-        st.markdown("### 📥 Download sample data:")
-        
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            # Sample dataset download button
-            sample_data_url = "https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv"
-            st.markdown("""
-            <a href="{sample_data_url}" target="_blank">
-                <button style="
-                    background-color: #FF6B6B;
-                    color: white;
-                    padding: 10px 20px;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 14px;
-                ">
-                    📊 Sample Daatset
-                </button>
-            </a>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            **Dataset:** Global Data on Sustainable Energy (2000-2020)  
-            **Source:** Kaggle - Ansh Tanwar  
-            **Size:** ~200 countries, 21 years of data  
-            **Format:** CSV file ready for analysis
-            """)
-        
-        st.markdown("---")
-        
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-            return df
-        else:
-            # If no file uploaded, show instructions
-            st.warning("Please upload your sustainable energy dataset CSV file.")
-            st.info("Expected columns: Entity, Year, Access to electricity (% of population), etc.")
-            return None
+        df = pd.read_csv(uploaded_file)
+        return df
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
         return None
 
-# Load data
-df = load_data()
+# File upload interface (not cached)
+def display_upload_interface():
+    """Display file upload interface and sample data download"""
+    uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
+    
+    # Add sample dataset download button
+    st.markdown("### 📥 Download sample data:")
+    
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        # Sample dataset download button
+        sample_data_url = "https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv"
+        st.markdown("""
+        <a href="{sample_data_url}" target="_blank">
+            <button style="
+                background-color: #FF6B6B;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+            ">
+                📊 Sample Dataset
+            </button>
+        </a>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        **Dataset:** Global Data on Sustainable Energy (2000-2020)  
+        **Source:** Kaggle - Ansh Tanwar  
+        **Size:** ~200 countries, 21 years of data  
+        **Format:** CSV file ready for analysis
+        """)
+    
+    st.markdown("---")
+    
+    return uploaded_file
+
+# Display upload interface and load data
+uploaded_file = display_upload_interface()
+
+# Process data if file is uploaded
+if uploaded_file is not None:
+    df = process_uploaded_data(uploaded_file)
+    if df is None:
+        st.stop()
+else:
+    df = None
+    st.warning("Please upload your sustainable energy dataset CSV file.")
+    st.info("Expected columns: Entity, Year, Access to electricity (% of population), etc.")
 
 if df is not None:
     # Data preprocessing
