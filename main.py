@@ -63,18 +63,35 @@ def display_upload_interface():
     uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
     
     # Add sample dataset download button
-    st.markdown("### 📥 Download dataset:")
+    st.markdown("### 📥 Don't have the dataset? Download sample data:")
     
     col1, col2 = st.columns([1, 3])
     with col1:
-        st.download_button(
-            label="📥 Download Dataset",
-            file_name="Dataset/global-data-on-sustainable-energy.csv")
+        # Sample dataset download button
+        sample_data_url = "https://www.kaggle.com/datasets/anshtanwar/global-data-on-sustainable-energy"
+        st.markdown("""
+        <a href="{sample_data_url}" target="_blank">
+            <button style="
+                background-color: #FF6B6B;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+            ">
+                📊 Download Dataset
+            </button>
+        </a>
+        """, unsafe_allow_html=True)
+    
     with col2:
         st.markdown("""
         **Dataset:** Global Data on Sustainable Energy (2000-2020)  
         **Source:** Kaggle - Ansh Tanwar  
         **Size:** ~200 countries, 21 years of data  
+        **Format:** CSV file ready for analysis
         """)
     
     st.markdown("---")
