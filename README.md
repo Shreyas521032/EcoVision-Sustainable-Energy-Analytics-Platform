@@ -2,6 +2,7 @@
 
 An advanced AI/ML-powered analytics platform for exploring global sustainable energy trends, predictions, and insights from comprehensive data spanning 2000-2020.
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ecovision-sustainable-energy-analytics-platform-ssmp.streamlit.app/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
