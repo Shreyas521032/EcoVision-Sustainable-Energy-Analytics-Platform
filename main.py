@@ -63,7 +63,7 @@ def display_upload_interface():
     uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset", type=['csv'])
     
     # Add sample dataset download button
-    st.markdown("### 📥 Don't have the dataset? Download it directly:")
+    st.markdown("### 📥 Download Dataset")
     
     col1, col2 = st.columns([1, 3])
     with col1:
@@ -86,7 +86,7 @@ def display_upload_interface():
             </button>
         </a>
         """, unsafe_allow_html=True)
-    
+        
     with col2:
         st.markdown("""
         **Dataset:** Global Data on Sustainable Energy (2000-2020)  
@@ -256,12 +256,32 @@ if df is not None:
                 col1, col2 = st.columns(2)
                 
                 # Check for renewable energy data
-                renewable_cols = ['renewable_share', 'Renewable energy share in total final energy consumption (%)', 'renewables_primary_energy']
+                renewable_cols = [
+                    'renewable_share', 
+                    'Renewable energy share in total final energy consumption (%)', 
+                    'renewables_primary_energy',
+                    'Renewables (% equivalent primary energy)',
+                    'renewable_energy_share',
+                    'Renewable energy share',
+                    'renewables_percentage',
+                    'renewable_percentage'
+                ]
                 renewable_col = None
+                
+                # Check each possible renewable energy column name
                 for col in renewable_cols:
                     if col in latest_data.columns:
                         renewable_col = col
                         break
+                
+                # If not found, search for any column containing 'renewable'
+                if renewable_col is None:
+                    for col in latest_data.columns:
+                        col_lower = col.lower()
+                        if 'renewable' in col_lower and ('share' in col_lower or '%' in col_lower or 'percent' in col_lower):
+                            renewable_col = col
+                            st.info(f"🔍 Found renewable energy column: '{col}'")
+                            break
                 
                 if renewable_col is not None:
                     with col1:
@@ -284,15 +304,50 @@ if df is not None:
                 else:
                     with col1:
                         st.warning("⚠️ Renewable energy share column not found in dataset.")
-                        st.write("Available columns:", list(latest_data.columns))
+                        
+                        # Show columns that might be renewable-related
+                        possible_renewable_cols = [col for col in latest_data.columns 
+                                                 if 'renewable' in col.lower()]
+                        
+                        if possible_renewable_cols:
+                            st.write("**Possible renewable energy columns found:**")
+                            for col in possible_renewable_cols:
+                                st.write(f"- `{col}`")
+                        else:
+                            st.write("**No renewable energy columns detected.**")
+                            st.write("**All numeric columns:**")
+                            numeric_cols = latest_data.select_dtypes(include=[np.number]).columns
+                            for col in numeric_cols:
+                                if col != 'Year':
+                                    st.write(f"- `{col}`")
                 
                 # Check for CO2 data
-                co2_cols = ['co2_per_capita', 'Value_co2_emissions (metric tons per capita)', 'CO2 emissions per capita']
+                co2_cols = [
+                    'co2_per_capita', 
+                    'Value_co2_emissions (metric tons per capita)', 
+                    'CO2 emissions per capita',
+                    'Value_co2_emissions',
+                    'co2_emissions',
+                    'CO2 emissions',
+                    'Carbon dioxide emissions per capita',
+                    'CO2 per capita'
+                ]
                 co2_col = None
+                
+                # Check each possible CO2 column name
                 for col in co2_cols:
                     if col in latest_data.columns:
                         co2_col = col
                         break
+                
+                # If not found, search for any column containing 'co2' or 'carbon'
+                if co2_col is None:
+                    for col in latest_data.columns:
+                        col_lower = col.lower()
+                        if 'co2' in col_lower or 'carbon' in col_lower or 'emission' in col_lower:
+                            co2_col = col
+                            st.info(f"🔍 Found CO2-related column: '{col}'")
+                            break
                 
                 if co2_col is not None:
                     with col2:
@@ -315,7 +370,22 @@ if df is not None:
                 else:
                     with col2:
                         st.warning("⚠️ CO2 emissions column not found in dataset.")
-                        st.write("Available columns:", list(latest_data.columns))
+                        
+                        # Show columns that might be CO2-related
+                        possible_co2_cols = [col for col in latest_data.columns 
+                                           if any(term in col.lower() for term in ['co2', 'carbon', 'emission'])]
+                        
+                        if possible_co2_cols:
+                            st.write("**Possible CO2-related columns found:**")
+                            for col in possible_co2_cols:
+                                st.write(f"- `{col}`")
+                        else:
+                            st.write("**No CO2-related columns detected.**")
+                            st.write("**All numeric columns:**")
+                            numeric_cols = latest_data.select_dtypes(include=[np.number]).columns
+                            for col in numeric_cols:
+                                if col != 'Year':
+                                    st.write(f"- `{col}`")
                 
                 # Show actual column names for debugging
                 with st.expander("🔍 Debug: Available Columns in Dataset"):
