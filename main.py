@@ -358,7 +358,7 @@ if df is not None:
                     size=selected_metric,
                     hover_name='Entity',
                     hover_data=[selected_metric],
-                    title=f"Global Distribution of {selected_metric.replace('_', ' ').title()})",
+                    title=f"Global Distribution of {selected_metric.replace('_', ' ').title()}",
                     color_continuous_scale='Viridis'
                 )
                 
