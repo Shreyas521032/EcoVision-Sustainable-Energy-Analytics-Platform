@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
-    page_title="🌍 Global Sustainable Energy Dashboard",
+    page_title="🌍 EcoVision",
     page_icon="🌱",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -43,7 +43,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title and description
-st.markdown('<h1 class="main-header">🌍 Global Sustainable Energy Analytics Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🌍 EcoVision: Sustainable Energy Analytics Platform</h1>', unsafe_allow_html=True)
 st.markdown("### Explore sustainable energy trends, predict future patterns, and discover insights from global data (2000-2020)")
 
 # File upload function (without caching)
