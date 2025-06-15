@@ -86,28 +86,6 @@ def display_upload_interface():
             </button>
         </a>
         """, unsafe_allow_html=True)
-        
-        st.markdown("**OR**")
-        
-        # Alternative: Load from repository directly
-        if st.button("🔄 Load Data from repository", help="Load dataset directly from repository"):
-            try:
-                # Try to load the dataset directly from the repository
-                import requests
-                response = requests.get(repo_data_url)
-                if response.status_code == 200:
-                    # Save temporarily and return as uploaded file
-                    with open("temp_dataset.csv", "wb") as f:
-                        f.write(response.content)
-                    st.success("✅ Sample dataset loaded successfully!")
-                    st.info("👆 The dataset has been loaded. You can now explore the dashboard!")
-                    # Return the temporary file path for processing
-                    return "temp_dataset.csv"
-                else:
-                    st.error("❌ Could not load dataset from repository. Please upload manually.")
-            except Exception as e:
-                st.error(f"❌ Error loading dataset: {str(e)}")
-                st.info("💡 Please upload the CSV file manually using the file uploader above.")
     
     with col2:
         st.markdown("""
