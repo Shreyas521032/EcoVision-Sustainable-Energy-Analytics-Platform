@@ -60,10 +60,10 @@ def process_uploaded_data(uploaded_file):
 # File upload interface (not cached)
 def display_upload_interface():
     """Display file upload interface and sample data download"""
-    uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset", type=['csv'])
+    uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
     
     # Add sample dataset download button
-    st.markdown("### 📥 Download Dataset")
+    st.markdown("### 📥 Download Dataset:")
     
     col1, col2 = st.columns([1, 3])
     with col1:
@@ -86,7 +86,7 @@ def display_upload_interface():
             </button>
         </a>
         """, unsafe_allow_html=True)
-        
+    
     with col2:
         st.markdown("""
         **Dataset:** Global Data on Sustainable Energy (2000-2020)  
@@ -253,8 +253,6 @@ if df is not None:
             else:
                 st.info(f"📅 Showing data for year: **{latest_year}** ({len(latest_data)} countries)")
                 
-                col1 = st.columns(1)
-                
                 # Check for renewable energy data
                 renewable_cols = [
                     'renewable_share', 
@@ -284,42 +282,40 @@ if df is not None:
                             break
                 
                 if renewable_col is not None:
-                    with col1:
-                        st.write("**🌟 Top 10 Countries - Renewable Energy Share**")
-                        # Remove NaN values and get top performers
-                        renewable_data = latest_data.dropna(subset=[renewable_col])
-                        if len(renewable_data) > 0:
-                            top_renewable = renewable_data.nlargest(10, renewable_col)[['Entity', renewable_col]]
-                            if len(top_renewable) > 0:
-                                fig = px.bar(top_renewable, x=renewable_col, y='Entity', orientation='h',
-                                           color=renewable_col, color_continuous_scale='Greens',
-                                           title="Top 10 Countries by Renewable Energy Share",
-                                           labels={renewable_col: 'Renewable Energy Share (%)'})
-                                fig.update_layout(height=400)
-                                st.plotly_chart(fig, use_container_width=True)
-                            else:
-                                st.warning("No renewable energy data available for visualization.")
+                    st.write("**🌟 Top 10 Countries - Renewable Energy Share**")
+                    # Remove NaN values and get top performers
+                    renewable_data = latest_data.dropna(subset=[renewable_col])
+                    if len(renewable_data) > 0:
+                        top_renewable = renewable_data.nlargest(10, renewable_col)[['Entity', renewable_col]]
+                        if len(top_renewable) > 0:
+                            fig = px.bar(top_renewable, x=renewable_col, y='Entity', orientation='h',
+                                       color=renewable_col, color_continuous_scale='Greens',
+                                       title="Top 10 Countries by Renewable Energy Share",
+                                       labels={renewable_col: 'Renewable Energy Share (%)'})
+                            fig.update_layout(height=400)
+                            st.plotly_chart(fig, use_container_width=True)
                         else:
-                            st.warning("No valid renewable energy data found.")
+                            st.warning("No renewable energy data available for visualization.")
+                    else:
+                        st.warning("No valid renewable energy data found.")
                 else:
-                    with col1:
-                        st.warning("⚠️ Renewable energy share column not found in dataset.")
-                        
-                        # Show columns that might be renewable-related
-                        possible_renewable_cols = [col for col in latest_data.columns 
-                                                 if 'renewable' in col.lower()]
-                        
-                        if possible_renewable_cols:
-                            st.write("**Possible renewable energy columns found:**")
-                            for col in possible_renewable_cols:
+                    st.warning("⚠️ Renewable energy share column not found in dataset.")
+                    
+                    # Show columns that might be renewable-related
+                    possible_renewable_cols = [col for col in latest_data.columns 
+                                             if 'renewable' in col.lower()]
+                    
+                    if possible_renewable_cols:
+                        st.write("**Possible renewable energy columns found:**")
+                        for col in possible_renewable_cols:
+                            st.write(f"- `{col}`")
+                    else:
+                        st.write("**No renewable energy columns detected.**")
+                        st.write("**All numeric columns:**")
+                        numeric_cols = latest_data.select_dtypes(include=[np.number]).columns
+                        for col in numeric_cols:
+                            if col != 'Year':
                                 st.write(f"- `{col}`")
-                        else:
-                            st.write("**No renewable energy columns detected.**")
-                            st.write("**All numeric columns:**")
-                            numeric_cols = latest_data.select_dtypes(include=[np.number]).columns
-                            for col in numeric_cols:
-                                if col != 'Year':
-                                    st.write(f"- `{col}`")
                 
                 # Show actual column names for debugging
                 with st.expander("🔍 Debug: Available Columns in Dataset"):
@@ -327,6 +323,7 @@ if df is not None:
                     for i, col in enumerate(latest_data.columns, 1):
                         st.write(f"{i}. `{col}`")
                     
+                    st.write(f"\n**Dataset shape:** {latest_data.shape}")
                     st.write(f"**Latest year:** {latest_year}")
                     st.write(f"**Countries in latest year:** {len(latest_data)}")
         
