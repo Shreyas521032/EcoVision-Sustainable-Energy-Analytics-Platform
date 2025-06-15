@@ -22,7 +22,7 @@ EcoVision Analytics is a comprehensive sustainability analytics dashboard that t
 
 ## 🚀 Live Project
 
-**[🌐 Live Deployed Project]([https://your-app-url.streamlit.app](https://ecovision-sustainable-energy-analytics-platform-ssmp.streamlit.app/))**
+**[🌐 Live Deployed Project](https://ecovision-sustainable-energy-analytics-platform-ssmp.streamlit.app/)**
 
 ## 📊 Dashboard Pages
 
