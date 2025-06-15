@@ -71,7 +71,7 @@ def display_upload_interface():
             label="📥 Download Dataset",
             data=csv_bytes,
             file_name="Dataset/global-data-on-sustainable-energy.csv",
-            mime="text/csv"
+            mime="text/csv")
     with col2:
         st.markdown("""
         **Dataset:** Global Data on Sustainable Energy (2000-2020)  
