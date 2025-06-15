@@ -1018,8 +1018,8 @@ if df is not None:
     st.markdown("""
     <div style='text-align: center; color: #666666;'>
         <p>🌱 <strong>Sustainable Energy Analytics Dashboard</strong> 🌱</p>
-        <p>Built with Streamlit • Data: Global Sustainable Energy (2000-2020)</p>
         <p>💡 Empowering data-driven decisions for a sustainable future</p>
+        <p> Made with teamwork of Shreyas, Shaurya, Mahati and Prakriti </p>
     </div>
     """, unsafe_allow_html=True)
 
