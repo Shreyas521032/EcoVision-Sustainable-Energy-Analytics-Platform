@@ -1,1 +1,1 @@
-# EcoVision-Analytics-Global-Sustainable-Energy-Intelligence-Dashboard
+# EcoVision: Sustainable Energy Analytics Platform
