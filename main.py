@@ -323,7 +323,6 @@ if df is not None:
                     for i, col in enumerate(latest_data.columns, 1):
                         st.write(f"{i}. `{col}`")
                     
-                    st.write(f"\n**Dataset shape:** {latest_data.shape}")
                     st.write(f"**Latest year:** {latest_year}")
                     st.write(f"**Countries in latest year:** {len(latest_data)}")
         
