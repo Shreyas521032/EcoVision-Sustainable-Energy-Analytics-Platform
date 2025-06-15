@@ -60,7 +60,7 @@ def load_data():
         col1, col2 = st.columns([1, 3])
         with col1:
             # Sample dataset download button
-            sample_data_url = "https://www.kaggle.com/datasets/anshtanwar/global-data-on-sustainable-energy"
+            sample_data_url = "https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv"
             st.markdown("""
             <a href="{sample_data_url}" target="_blank">
                 <button style="
