@@ -1,4 +1,4 @@
-# 🌍 EcoVision Analytics: Global Sustainable Energy Intelligence Dashboard
+# 🌍 EcoVision: Sustainable Energy Analytics Platform
 
 An advanced AI/ML-powered analytics platform for exploring global sustainable energy trends, predictions, and insights from comprehensive data spanning 2000-2020.
 
