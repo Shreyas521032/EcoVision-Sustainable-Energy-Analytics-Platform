@@ -1,1 +1,1 @@
-# Shreyas521032-EcoVision-Analytics-Global-Sustainable-Energy-Intelligence-Dashboard
+# EcoVision-Analytics-Global-Sustainable-Energy-Intelligence-Dashboard
