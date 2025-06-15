@@ -63,16 +63,16 @@ def display_upload_interface():
     uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
     
     # Add sample dataset download button
-    st.markdown("### 📥 Don't have the dataset? Download sample data:")
+    st.markdown("### 📥 Don't have the dataset? Download it directly:")
     
     col1, col2 = st.columns([1, 3])
     with col1:
-        # Sample dataset download button
-        sample_data_url = "https://www.kaggle.com/datasets/anshtanwar/global-data-on-sustainable-energy"
+        # Direct repository dataset download button
+        repo_data_url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/Dataset/global-data-on-sustainable-energy.csv"
         st.markdown("""
-        <a href="{sample_data_url}" target="_blank">
+        <a href="https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv" download="global-data-on-sustainable-energy.csv" target="_blank">
             <button style="
-                background-color: #FF6B6B;
+                background-color: #4CAF50;
                 color: white;
                 padding: 10px 20px;
                 border: none;
@@ -80,18 +80,49 @@ def display_upload_interface():
                 cursor: pointer;
                 font-weight: bold;
                 font-size: 14px;
-            ">
-                📊 Download Dataset
+                transition: background-color 0.3s;
+            " onmouseover="this.style.backgroundColor='#45a049'" onmouseout="this.style.backgroundColor='#4CAF50'">
+                📥 Download Dataset CSV
             </button>
         </a>
         """, unsafe_allow_html=True)
+        
+        st.markdown("**OR**")
+        
+        # Alternative: Load from repository directly
+        if st.button("🔄 Load Sample Data", help="Load dataset directly from repository"):
+            try:
+                # Try to load the dataset directly from the repository
+                import requests
+                response = requests.get(repo_data_url)
+                if response.status_code == 200:
+                    # Save temporarily and return as uploaded file
+                    with open("temp_dataset.csv", "wb") as f:
+                        f.write(response.content)
+                    st.success("✅ Sample dataset loaded successfully!")
+                    st.info("👆 The dataset has been loaded. You can now explore the dashboard!")
+                    # Return the temporary file path for processing
+                    return "temp_dataset.csv"
+                else:
+                    st.error("❌ Could not load dataset from repository. Please upload manually.")
+            except Exception as e:
+                st.error(f"❌ Error loading dataset: {str(e)}")
+                st.info("💡 Please upload the CSV file manually using the file uploader above.")
     
     with col2:
         st.markdown("""
         **Dataset:** Global Data on Sustainable Energy (2000-2020)  
-        **Source:** Kaggle - Ansh Tanwar  
+        **Source:** Repository Dataset  
         **Size:** ~200 countries, 21 years of data  
         **Format:** CSV file ready for analysis
+        
+        **📋 Instructions:**
+        1. Click "📥 Download Dataset CSV" to download the file
+        2. Then upload it using the file uploader above
+        
+        **OR**
+        
+        1. Click "🔄 Load Sample Data" to load directly from repository
         """)
     
     st.markdown("---")
@@ -101,14 +132,25 @@ def display_upload_interface():
 # Display upload interface and load data
 uploaded_file = display_upload_interface()
 
-# Process data if file is uploaded
+# Process data if file is uploaded or loaded from repository
 if uploaded_file is not None:
-    df = process_uploaded_data(uploaded_file)
+    if isinstance(uploaded_file, str):
+        # If it's a file path (loaded from repository)
+        try:
+            df = pd.read_csv(uploaded_file)
+            st.success("✅ Dataset loaded successfully from repository!")
+        except Exception as e:
+            st.error(f"Error loading data from repository: {str(e)}")
+            df = None
+    else:
+        # If it's an uploaded file
+        df = process_uploaded_data(uploaded_file)
+    
     if df is None:
         st.stop()
 else:
     df = None
-    st.warning("Please upload your sustainable energy dataset CSV file.")
+    st.warning("Please upload your sustainable energy dataset CSV file or load the sample data.")
     st.info("Expected columns: Entity, Year, Access to electricity (% of population), etc.")
 
 if df is not None:
