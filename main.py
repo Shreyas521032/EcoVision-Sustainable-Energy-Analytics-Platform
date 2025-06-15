@@ -60,7 +60,7 @@ def process_uploaded_data(uploaded_file):
 # File upload interface (not cached)
 def display_upload_interface():
     """Display file upload interface and sample data download"""
-    uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
+    uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset", type=['csv'])
     
     # Add sample dataset download button
     st.markdown("### 📥 Don't have the dataset? Download it directly:")
@@ -68,7 +68,7 @@ def display_upload_interface():
     col1, col2 = st.columns([1, 3])
     with col1:
         # Direct repository dataset download button
-        repo_data_url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/Dataset/global-data-on-sustainable-energy.csv"
+        repo_data_url = "https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv"
         st.markdown("""
         <a href="https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv" download="global-data-on-sustainable-energy.csv" target="_blank">
             <button style="
@@ -82,10 +82,32 @@ def display_upload_interface():
                 font-size: 14px;
                 transition: background-color 0.3s;
             " onmouseover="this.style.backgroundColor='#45a049'" onmouseout="this.style.backgroundColor='#4CAF50'">
-                📥 Download Dataset CSV
+                📥 Download Dataset
             </button>
         </a>
         """, unsafe_allow_html=True)
+        
+        st.markdown("**OR**")
+        
+        # Alternative: Load from repository directly
+        if st.button("🔄 Load Data from repository", help="Load dataset directly from repository"):
+            try:
+                # Try to load the dataset directly from the repository
+                import requests
+                response = requests.get(repo_data_url)
+                if response.status_code == 200:
+                    # Save temporarily and return as uploaded file
+                    with open("temp_dataset.csv", "wb") as f:
+                        f.write(response.content)
+                    st.success("✅ Sample dataset loaded successfully!")
+                    st.info("👆 The dataset has been loaded. You can now explore the dashboard!")
+                    # Return the temporary file path for processing
+                    return "temp_dataset.csv"
+                else:
+                    st.error("❌ Could not load dataset from repository. Please upload manually.")
+            except Exception as e:
+                st.error(f"❌ Error loading dataset: {str(e)}")
+                st.info("💡 Please upload the CSV file manually using the file uploader above.")
     
     with col2:
         st.markdown("""
@@ -244,28 +266,95 @@ if df is not None:
         # Top/Bottom performers
         st.subheader("🏆 Top & Bottom Performers (Latest Year)")
         
-        latest_year = df_filtered['Year'].max()
-        latest_data = df_filtered[df_filtered['Year'] == latest_year]
+        try:
+            latest_year = df_filtered['Year'].max()
+            latest_data = df_filtered[df_filtered['Year'] == latest_year].copy()
+            
+            if len(latest_data) == 0:
+                st.warning("No data available for the latest year in your filtered selection.")
+            else:
+                st.info(f"📅 Showing data for year: **{latest_year}** ({len(latest_data)} countries)")
+                
+                col1, col2 = st.columns(2)
+                
+                # Check for renewable energy data
+                renewable_cols = ['renewable_share', 'Renewable energy share in total final energy consumption (%)', 'renewables_primary_energy']
+                renewable_col = None
+                for col in renewable_cols:
+                    if col in latest_data.columns:
+                        renewable_col = col
+                        break
+                
+                if renewable_col is not None:
+                    with col1:
+                        st.write("**🌟 Top 10 Countries - Renewable Energy Share**")
+                        # Remove NaN values and get top performers
+                        renewable_data = latest_data.dropna(subset=[renewable_col])
+                        if len(renewable_data) > 0:
+                            top_renewable = renewable_data.nlargest(10, renewable_col)[['Entity', renewable_col]]
+                            if len(top_renewable) > 0:
+                                fig = px.bar(top_renewable, x=renewable_col, y='Entity', orientation='h',
+                                           color=renewable_col, color_continuous_scale='Greens',
+                                           title="Top 10 Countries by Renewable Energy Share",
+                                           labels={renewable_col: 'Renewable Energy Share (%)'})
+                                fig.update_layout(height=400)
+                                st.plotly_chart(fig, use_container_width=True)
+                            else:
+                                st.warning("No renewable energy data available for visualization.")
+                        else:
+                            st.warning("No valid renewable energy data found.")
+                else:
+                    with col1:
+                        st.warning("⚠️ Renewable energy share column not found in dataset.")
+                        st.write("Available columns:", list(latest_data.columns))
+                
+                # Check for CO2 data
+                co2_cols = ['co2_per_capita', 'Value_co2_emissions (metric tons per capita)', 'CO2 emissions per capita']
+                co2_col = None
+                for col in co2_cols:
+                    if col in latest_data.columns:
+                        co2_col = col
+                        break
+                
+                if co2_col is not None:
+                    with col2:
+                        st.write("**🌿 Top 10 Countries - Lowest CO2 per Capita**")
+                        # Remove NaN values and get lowest emitters
+                        co2_data = latest_data.dropna(subset=[co2_col])
+                        if len(co2_data) > 0:
+                            low_co2 = co2_data.nsmallest(10, co2_col)[['Entity', co2_col]]
+                            if len(low_co2) > 0:
+                                fig = px.bar(low_co2, x=co2_col, y='Entity', orientation='h',
+                                           color=co2_col, color_continuous_scale='Greens_r',
+                                           title="Top 10 Countries with Lowest CO2 per Capita",
+                                           labels={co2_col: 'CO2 Emissions (metric tons per capita)'})
+                                fig.update_layout(height=400)
+                                st.plotly_chart(fig, use_container_width=True)
+                            else:
+                                st.warning("No CO2 data available for visualization.")
+                        else:
+                            st.warning("No valid CO2 data found.")
+                else:
+                    with col2:
+                        st.warning("⚠️ CO2 emissions column not found in dataset.")
+                        st.write("Available columns:", list(latest_data.columns))
+                
+                # Show actual column names for debugging
+                with st.expander("🔍 Debug: Available Columns in Dataset"):
+                    st.write("**All columns in the dataset:**")
+                    for i, col in enumerate(latest_data.columns, 1):
+                        st.write(f"{i}. `{col}`")
+                    
+                    st.write(f"\n**Dataset shape:** {latest_data.shape}")
+                    st.write(f"**Latest year:** {latest_year}")
+                    st.write(f"**Countries in latest year:** {len(latest_data)}")
         
-        col1, col2 = st.columns(2)
-        
-        if 'renewable_share' in latest_data.columns:
-            with col1:
-                st.write("**🌟 Top 10 Countries - Renewable Energy Share**")
-                top_renewable = latest_data.nlargest(10, 'renewable_share')[['Entity', 'renewable_share']]
-                fig = px.bar(top_renewable, x='renewable_share', y='Entity', orientation='h',
-                           color='renewable_share', color_continuous_scale='Greens',
-                           title="Top 10 Countries by Renewable Energy Share")
-                st.plotly_chart(fig, use_container_width=True)
-        
-        if 'co2_per_capita' in latest_data.columns:
-            with col2:
-                st.write("**🌿 Top 10 Countries - Lowest CO2 per Capita**")
-                low_co2 = latest_data.nsmallest(10, 'co2_per_capita')[['Entity', 'co2_per_capita']]
-                fig = px.bar(low_co2, x='co2_per_capita', y='Entity', orientation='h',
-                           color='co2_per_capita', color_continuous_scale='Greens_r',
-                           title="Top 10 Countries with Lowest CO2 per Capita")
-                st.plotly_chart(fig, use_container_width=True)
+        except Exception as e:
+            st.error(f"Error in Top & Bottom Performers section: {str(e)}")
+            st.write("**Debug info:**")
+            st.write(f"- Dataset shape: {df_filtered.shape}")
+            st.write(f"- Available columns: {list(df_filtered.columns)}")
+            st.write(f"- Year range: {df_filtered['Year'].min()} to {df_filtered['Year'].max()}")
     
     # PAGE 2: Geographic Analysis
     elif page == "🌍 Geographic Analysis":
