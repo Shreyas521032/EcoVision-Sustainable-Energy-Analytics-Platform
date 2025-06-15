@@ -253,7 +253,7 @@ if df is not None:
             else:
                 st.info(f"📅 Showing data for year: **{latest_year}** ({len(latest_data)} countries)")
                 
-                col1, col2 = st.columns(2)
+                col1 = st.columns(1)
                 
                 # Check for renewable energy data
                 renewable_cols = [
@@ -321,79 +321,12 @@ if df is not None:
                                 if col != 'Year':
                                     st.write(f"- `{col}`")
                 
-                # Check for CO2 data
-                co2_cols = [
-                    'co2_per_capita', 
-                    'Value_co2_emissions (metric tons per capita)', 
-                    'CO2 emissions per capita',
-                    'Value_co2_emissions',
-                    'co2_emissions',
-                    'CO2 emissions',
-                    'Carbon dioxide emissions per capita',
-                    'CO2 per capita'
-                ]
-                co2_col = None
-                
-                # Check each possible CO2 column name
-                for col in co2_cols:
-                    if col in latest_data.columns:
-                        co2_col = col
-                        break
-                
-                # If not found, search for any column containing 'co2' or 'carbon'
-                if co2_col is None:
-                    for col in latest_data.columns:
-                        col_lower = col.lower()
-                        if 'co2' in col_lower or 'carbon' in col_lower or 'emission' in col_lower:
-                            co2_col = col
-                            st.info(f"🔍 Found CO2-related column: '{col}'")
-                            break
-                
-                if co2_col is not None:
-                    with col2:
-                        st.write("**🌿 Top 10 Countries - Lowest CO2 per Capita**")
-                        # Remove NaN values and get lowest emitters
-                        co2_data = latest_data.dropna(subset=[co2_col])
-                        if len(co2_data) > 0:
-                            low_co2 = co2_data.nsmallest(10, co2_col)[['Entity', co2_col]]
-                            if len(low_co2) > 0:
-                                fig = px.bar(low_co2, x=co2_col, y='Entity', orientation='h',
-                                           color=co2_col, color_continuous_scale='Greens_r',
-                                           title="Top 10 Countries with Lowest CO2 per Capita",
-                                           labels={co2_col: 'CO2 Emissions (metric tons per capita)'})
-                                fig.update_layout(height=400)
-                                st.plotly_chart(fig, use_container_width=True)
-                            else:
-                                st.warning("No CO2 data available for visualization.")
-                        else:
-                            st.warning("No valid CO2 data found.")
-                else:
-                    with col2:
-                        st.warning("⚠️ CO2 emissions column not found in dataset.")
-                        
-                        # Show columns that might be CO2-related
-                        possible_co2_cols = [col for col in latest_data.columns 
-                                           if any(term in col.lower() for term in ['co2', 'carbon', 'emission'])]
-                        
-                        if possible_co2_cols:
-                            st.write("**Possible CO2-related columns found:**")
-                            for col in possible_co2_cols:
-                                st.write(f"- `{col}`")
-                        else:
-                            st.write("**No CO2-related columns detected.**")
-                            st.write("**All numeric columns:**")
-                            numeric_cols = latest_data.select_dtypes(include=[np.number]).columns
-                            for col in numeric_cols:
-                                if col != 'Year':
-                                    st.write(f"- `{col}`")
-                
                 # Show actual column names for debugging
                 with st.expander("🔍 Debug: Available Columns in Dataset"):
                     st.write("**All columns in the dataset:**")
                     for i, col in enumerate(latest_data.columns, 1):
                         st.write(f"{i}. `{col}`")
                     
-                    st.write(f"\n**Dataset shape:** {latest_data.shape}")
                     st.write(f"**Latest year:** {latest_year}")
                     st.write(f"**Countries in latest year:** {len(latest_data)}")
         
