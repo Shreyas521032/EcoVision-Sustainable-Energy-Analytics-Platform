@@ -13,7 +13,6 @@ from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
-# Page configuration
 st.set_page_config(
     page_title="🌍 EcoVision",
     page_icon="🌱",
@@ -21,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
 st.markdown("""
 <style>
     .main-header {
@@ -42,11 +40,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Title and description
 st.markdown('<h1 class="main-header">🌍 EcoVision: Sustainable Energy Analytics Platform</h1>', unsafe_allow_html=True)
 st.markdown("### Explore sustainable energy trends, predict future patterns, and discover insights from global data (2000-2020)")
 
-# File upload function (without caching)
 @st.cache_data
 def process_uploaded_data(uploaded_file):
     """Process and cache the uploaded dataset"""
@@ -57,17 +53,14 @@ def process_uploaded_data(uploaded_file):
         st.error(f"Error loading data: {str(e)}")
         return None
 
-# File upload interface (not cached)
 def display_upload_interface():
     """Display file upload interface and sample data download"""
     uploaded_file = st.file_uploader("Upload your Sustainable Energy Dataset (CSV)", type=['csv'])
     
-    # Add sample dataset download button
     st.markdown("### 📥 Download Dataset:")
     
     col1, col2 = st.columns([1, 3])
     with col1:
-        # Direct repository dataset download button
         repo_data_url = "https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv"
         st.markdown("""
         <a href="https://github.com/Shreyas521032/EcoVision-Sustainable-Energy-Analytics-Platform/blob/main/Dataset/global-data-on-sustainable-energy.csv" download="global-data-on-sustainable-energy.csv" target="_blank">
@@ -107,13 +100,10 @@ def display_upload_interface():
     
     return uploaded_file
 
-# Display upload interface and load data
 uploaded_file = display_upload_interface()
 
-# Process data if file is uploaded or loaded from repository
 if uploaded_file is not None:
     if isinstance(uploaded_file, str):
-        # If it's a file path (loaded from repository)
         try:
             df = pd.read_csv(uploaded_file)
             st.success("✅ Dataset loaded successfully from repository!")
@@ -121,7 +111,6 @@ if uploaded_file is not None:
             st.error(f"Error loading data from repository: {str(e)}")
             df = None
     else:
-        # If it's an uploaded file
         df = process_uploaded_data(uploaded_file)
     
     if df is None:
@@ -132,14 +121,11 @@ else:
     st.info("Expected columns: Entity, Year, Access to electricity (% of population), etc.")
 
 if df is not None:
-    # Data preprocessing
     @st.cache_data
     def preprocess_data(df):
         """Clean and preprocess the dataset"""
-        # Handle missing values and clean column names
         df_clean = df.copy()
         
-        # Standardize column names (remove special characters and spaces)
         column_mapping = {
             'Access to electricity (% of population)': 'electricity_access',
             'Access to clean fuels for cooking (% of population)': 'clean_cooking_access',
@@ -162,12 +148,10 @@ if df is not None:
             'Longitude': 'longitude'
         }
         
-        # Rename columns if they exist
         for old_name, new_name in column_mapping.items():
             if old_name in df_clean.columns:
                 df_clean = df_clean.rename(columns={old_name: new_name})
         
-        # Fill missing values with appropriate methods
         numeric_columns = df_clean.select_dtypes(include=[np.number]).columns
         for col in numeric_columns:
             if col != 'Year':
@@ -177,7 +161,6 @@ if df is not None:
     
     df_clean = preprocess_data(df)
     
-    # Sidebar for navigation
     st.sidebar.title("🎯 Navigation")
     page = st.sidebar.selectbox(
         "Choose Analysis Type",
@@ -185,18 +168,14 @@ if df is not None:
          "🔄 Correlation Analysis", "🤖 Predictive Modeling", "🔮 Time Series Forecasting"]
     )
     
-    # Sidebar filters
     st.sidebar.title("🔧 Filters")
     
-    # Year range filter
     min_year, max_year = int(df_clean['Year'].min()), int(df_clean['Year'].max())
     year_range = st.sidebar.slider("Select Year Range", min_year, max_year, (min_year, max_year))
     
-    # Country filter
     countries = ['All'] + sorted(df_clean['Entity'].unique().tolist())
     selected_countries = st.sidebar.multiselect("Select Countries", countries, default=['All'])
     
-    # Filter data based on selections
     df_filtered = df_clean[
         (df_clean['Year'] >= year_range[0]) & 
         (df_clean['Year'] <= year_range[1])
@@ -205,7 +184,6 @@ if df is not None:
     if 'All' not in selected_countries and selected_countries:
         df_filtered = df_filtered[df_filtered['Entity'].isin(selected_countries)]
     
-    # PAGE 1: Overview & Key Metrics
     if page == "📊 Overview & Key Metrics":
         st.header("📊 Dataset Overview & Key Metrics")
         
@@ -224,7 +202,6 @@ if df is not None:
                 avg_renewable = df_filtered['renewable_share'].mean()
                 st.metric("Avg Renewable Share", f"{avg_renewable:.1f}%")
         
-        # Dataset info
         st.subheader("📋 Dataset Information")
         col1, col2 = st.columns(2)
         
@@ -241,7 +218,6 @@ if df is not None:
             st.write("- Renewable energy data")
             st.write("- Economic indicators")
         
-        # Top/Bottom performers
         st.subheader("🏆 Top & Bottom Performers (Latest Year)")
         
         try:
@@ -253,7 +229,6 @@ if df is not None:
             else:
                 st.info(f"📅 Showing data for year: **{latest_year}** ({len(latest_data)} countries)")
                 
-                # Check for renewable energy data
                 renewable_cols = [
                     'renewable_share', 
                     'Renewable energy share in total final energy consumption (%)', 
@@ -266,13 +241,11 @@ if df is not None:
                 ]
                 renewable_col = None
                 
-                # Check each possible renewable energy column name
                 for col in renewable_cols:
                     if col in latest_data.columns:
                         renewable_col = col
                         break
                 
-                # If not found, search for any column containing 'renewable'
                 if renewable_col is None:
                     for col in latest_data.columns:
                         col_lower = col.lower()
@@ -283,7 +256,6 @@ if df is not None:
                 
                 if renewable_col is not None:
                     st.write("**🌟 Top 10 Countries - Renewable Energy Share**")
-                    # Remove NaN values and get top performers
                     renewable_data = latest_data.dropna(subset=[renewable_col])
                     if len(renewable_data) > 0:
                         top_renewable = renewable_data.nlargest(10, renewable_col)[['Entity', renewable_col]]
@@ -301,7 +273,6 @@ if df is not None:
                 else:
                     st.warning("⚠️ Renewable energy share column not found in dataset.")
                     
-                    # Show columns that might be renewable-related
                     possible_renewable_cols = [col for col in latest_data.columns 
                                              if 'renewable' in col.lower()]
                     
@@ -317,7 +288,6 @@ if df is not None:
                             if col != 'Year':
                                 st.write(f"- `{col}`")
                 
-                # Show actual column names for debugging
                 with st.expander("🔍 Debug: Available Columns in Dataset"):
                     st.write("**All columns in the dataset:**")
                     for i, col in enumerate(latest_data.columns, 1):
@@ -333,23 +303,19 @@ if df is not None:
             st.write(f"- Available columns: {list(df_filtered.columns)}")
             st.write(f"- Year range: {df_filtered['Year'].min()} to {df_filtered['Year'].max()}")
     
-    # PAGE 2: Geographic Analysis
     elif page == "🌍 Geographic Analysis":
         st.header("🌍 Geographic Analysis")
         
-        # World map visualizations
         if 'latitude' in df_filtered.columns and 'longitude' in df_filtered.columns:
             latest_year = df_filtered['Year'].max()
             map_data = df_filtered[df_filtered['Year'] == latest_year]
             
-            # Select metric for mapping
             numeric_cols = [col for col in map_data.select_dtypes(include=[np.number]).columns 
                           if col not in ['Year', 'latitude', 'longitude']]
             
             if numeric_cols:
                 selected_metric = st.selectbox("Select Metric for World Map", numeric_cols)
                 
-                # Create world map
                 fig = px.scatter_geo(
                     map_data,
                     lat='latitude',
@@ -365,10 +331,8 @@ if df is not None:
                 fig.update_layout(height=600)
                 st.plotly_chart(fig, use_container_width=True)
         
-        # Regional analysis
         st.subheader("🌏 Regional Comparisons")
         
-        # Create regional groupings (simplified)
         def assign_region(country):
             europe = ['Germany', 'France', 'United Kingdom', 'Italy', 'Spain', 'Netherlands', 'Belgium', 'Sweden', 'Norway', 'Denmark']
             asia = ['China', 'India', 'Japan', 'South Korea', 'Indonesia', 'Thailand', 'Malaysia', 'Singapore']
@@ -395,7 +359,6 @@ if df is not None:
         df_regional = df_filtered.copy()
         df_regional['Region'] = df_regional['Entity'].apply(assign_region)
         
-        # Regional comparison charts
         col1, col2 = st.columns(2)
         
         if 'renewable_share' in df_regional.columns:
@@ -412,14 +375,11 @@ if df is not None:
                             title="CO2 per Capita by Region Over Time")
                 st.plotly_chart(fig, use_container_width=True)
     
-    # PAGE 3: Trend Analysis
     elif page == "📈 Trend Analysis":
         st.header("📈 Trend Analysis Over Time")
         
-        # Global trends
         st.subheader("🌍 Global Trends")
         
-        # Calculate global averages by year
         numeric_cols = df_filtered.select_dtypes(include=[np.number]).columns
         trend_cols = [col for col in numeric_cols if col != 'Year']
         
@@ -433,7 +393,6 @@ if df is not None:
             if selected_trends:
                 global_trends = df_filtered.groupby('Year')[selected_trends].mean().reset_index()
                 
-                # Create subplots
                 rows = (len(selected_trends) + 1) // 2
                 fig = make_subplots(
                     rows=rows, cols=2,
@@ -454,7 +413,6 @@ if df is not None:
                 fig.update_layout(height=300*rows, showlegend=False, title_text="Global Trends Over Time")
                 st.plotly_chart(fig, use_container_width=True)
         
-        # Country-specific trends
         st.subheader("🏳️ Country-Specific Trends")
         
         if len(df_filtered['Entity'].unique()) > 1:
@@ -478,13 +436,11 @@ if df is not None:
                 fig.update_layout(height=500)
                 st.plotly_chart(fig, use_container_width=True)
         
-        # Growth rate analysis
         st.subheader("📊 Growth Rate Analysis")
         
         growth_indicator = st.selectbox("Select Indicator for Growth Analysis", trend_cols)
         
         if growth_indicator:
-            # Calculate year-over-year growth rates
             growth_data = []
             for country in df_filtered['Entity'].unique():
                 country_data = df_filtered[df_filtered['Entity'] == country].sort_values('Year')
@@ -501,11 +457,9 @@ if df is not None:
                 fig.add_hline(y=0, line_dash="dash", line_color="red")
                 st.plotly_chart(fig, use_container_width=True)
     
-    # PAGE 4: Correlation Analysis
     elif page == "🔄 Correlation Analysis":
         st.header("🔄 Correlation Analysis")
         
-        # Correlation matrix
         st.subheader("🎯 Correlation Matrix")
         
         numeric_cols = df_filtered.select_dtypes(include=[np.number]).columns
@@ -521,7 +475,6 @@ if df is not None:
             if len(selected_corr_cols) > 1:
                 corr_matrix = df_filtered[selected_corr_cols].corr()
                 
-                # Create heatmap
                 fig = px.imshow(corr_matrix, 
                               text_auto=True, 
                               aspect="auto",
@@ -530,10 +483,8 @@ if df is not None:
                 fig.update_layout(height=600)
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Key correlations
                 st.subheader("🔍 Key Correlations")
                 
-                # Find strongest correlations
                 corr_pairs = []
                 for i in range(len(corr_matrix.columns)):
                     for j in range(i+1, len(corr_matrix.columns)):
@@ -557,7 +508,6 @@ if df is not None:
                     for var1, var2, corr in negative_corrs:
                         st.write(f"• {var1.replace('_', ' ').title()} ↔ {var2.replace('_', ' ').title()}: **{corr:.3f}**")
         
-        # Scatter plot analysis
         st.subheader("📊 Scatter Plot Analysis")
         
         col1, col2 = st.columns(2)
@@ -577,19 +527,16 @@ if df is not None:
             fig.update_layout(height=500)
             st.plotly_chart(fig, use_container_width=True)
     
-    # PAGE 5: Predictive Modeling
     elif page == "🤖 Predictive Modeling":
         st.header("🤖 Predictive Modeling")
         
         st.subheader("🎯 Model Configuration")
         
-        # Select target variable
         numeric_cols = df_filtered.select_dtypes(include=[np.number]).columns
         target_cols = [col for col in numeric_cols if col != 'Year']
         
         target_var = st.selectbox("Select Target Variable to Predict", target_cols)
         
-        # Select feature variables
         feature_cols = [col for col in target_cols if col != target_var]
         selected_features = st.multiselect(
             "Select Feature Variables",
@@ -598,13 +545,11 @@ if df is not None:
         )
         
         if target_var and selected_features:
-            # Prepare data for modeling
             model_data = df_filtered[['Entity', 'Year', target_var] + selected_features].dropna()
             
-            if len(model_data) > 10:  # Minimum data requirement
+            if len(model_data) > 10:  
                 st.subheader("📈 Model Training & Evaluation")
                 
-                # Split data (use earlier years for training, later for testing)
                 split_year = int(model_data['Year'].quantile(0.8))
                 train_data = model_data[model_data['Year'] <= split_year]
                 test_data = model_data[model_data['Year'] > split_year]
@@ -615,7 +560,6 @@ if df is not None:
                 y_test = test_data[target_var]
                 
                 if len(X_train) > 0 and len(X_test) > 0:
-                    # Train models
                     models = {
                         'Linear Regression': LinearRegression(),
                         'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42)
@@ -624,13 +568,10 @@ if df is not None:
                     model_results = {}
                     
                     for name, model in models.items():
-                        # Train model
                         model.fit(X_train, y_train)
                         
-                        # Make predictions
                         y_pred = model.predict(X_test)
                         
-                        # Calculate metrics
                         mae = mean_absolute_error(y_test, y_pred)
                         mse = mean_squared_error(y_test, y_pred)
                         r2 = r2_score(y_test, y_pred)
@@ -643,7 +584,6 @@ if df is not None:
                             'R²': r2
                         }
                     
-                    # Display model performance
                     col1, col2 = st.columns(2)
                     
                     with col1:
@@ -657,7 +597,6 @@ if df is not None:
                         st.dataframe(performance_df)
                     
                     with col2:
-                        # Feature importance for Random Forest
                         if 'Random Forest' in model_results:
                             rf_model = model_results['Random Forest']['model']
                             feature_importance = pd.DataFrame({
@@ -669,13 +608,11 @@ if df is not None:
                                        title="Feature Importance (Random Forest)")
                             st.plotly_chart(fig, use_container_width=True)
                     
-                    # Prediction vs Actual plots
                     st.subheader("📊 Prediction vs Actual Values")
                     
                     for name, results in model_results.items():
                         fig = go.Figure()
                         
-                        # Add scatter plot
                         fig.add_trace(go.Scatter(
                             x=y_test, 
                             y=results['predictions'],
@@ -685,7 +622,6 @@ if df is not None:
                             hovertemplate='Actual: %{x}<br>Predicted: %{y}<br>%{text}<extra></extra>'
                         ))
                         
-                        # Add perfect prediction line
                         min_val, max_val = min(y_test.min(), results['predictions'].min()), max(y_test.max(), results['predictions'].max())
                         fig.add_trace(go.Scatter(
                             x=[min_val, max_val],
@@ -709,13 +645,11 @@ if df is not None:
             else:
                 st.warning("Insufficient data for modeling. Please select different variables or expand the dataset.")
     
-    # PAGE 6: Time Series Forecasting
     elif page == "🔮 Time Series Forecasting":
         st.header("🔮 Time Series Forecasting")
         
         st.subheader("⚙️ Forecasting Configuration")
         
-        # Select countries and indicators for forecasting
         forecast_countries = st.multiselect(
             "Select Countries for Forecasting",
             df_filtered['Entity'].unique(),
@@ -727,7 +661,6 @@ if df is not None:
         
         selected_indicator = st.selectbox("Select Indicator to Forecast", forecast_indicators)
         
-        # Forecasting parameters
         col1, col2 = st.columns(2)
         with col1:
             forecast_years = st.slider("Years to Forecast", 1, 10, 5)
@@ -740,52 +673,41 @@ if df is not None:
             for country in forecast_countries:
                 country_data = df_filtered[df_filtered['Entity'] == country].sort_values('Year')
                 
-                if len(country_data) >= 3:  # Minimum data points for forecasting
-                    # Prepare time series data
+                if len(country_data) >= 3:  
                     years = country_data['Year'].values
                     values = country_data[selected_indicator].values
                     
-                    # Remove NaN values
                     valid_idx = ~np.isnan(values)
                     years_clean = years[valid_idx]
                     values_clean = values[valid_idx]
                     
                     if len(years_clean) >= 3:
-                        # Fit model based on selection
                         if model_type == "Linear Trend":
-                            # Linear regression
                             X = years_clean.reshape(-1, 1)
                             model = LinearRegression()
                             model.fit(X, values_clean)
                             
-                            # Generate future years
                             future_years = np.arange(years_clean.max() + 1, years_clean.max() + 1 + forecast_years)
                             future_X = future_years.reshape(-1, 1)
                             future_predictions = model.predict(future_X)
                             
-                            # Get historical predictions for plotting
                             historical_predictions = model.predict(X)
                             
-                        else:  # Polynomial Trend
-                            # Polynomial regression (degree 2)
+                        else:  
                             X = years_clean.reshape(-1, 1)
                             poly_features = np.column_stack([X, X**2])
                             model = LinearRegression()
                             model.fit(poly_features, values_clean)
                             
-                            # Generate future predictions
                             future_years = np.arange(years_clean.max() + 1, years_clean.max() + 1 + forecast_years)
                             future_X = future_years.reshape(-1, 1)
                             future_poly_features = np.column_stack([future_X, future_X**2])
                             future_predictions = model.predict(future_poly_features)
                             
-                            # Get historical predictions for plotting
                             historical_predictions = model.predict(poly_features)
                         
-                        # Create forecast plot
                         fig = go.Figure()
                         
-                        # Historical data
                         fig.add_trace(go.Scatter(
                             x=years_clean,
                             y=values_clean,
@@ -794,7 +716,6 @@ if df is not None:
                             line=dict(color='blue')
                         ))
                         
-                        # Historical trend line
                         fig.add_trace(go.Scatter(
                             x=years_clean,
                             y=historical_predictions,
@@ -803,7 +724,6 @@ if df is not None:
                             line=dict(color='orange', dash='dash')
                         ))
                         
-                        # Future predictions
                         fig.add_trace(go.Scatter(
                             x=future_years,
                             y=future_predictions,
@@ -813,7 +733,6 @@ if df is not None:
                             marker=dict(symbol='diamond')
                         ))
                         
-                        # Add vertical line to separate historical and forecast
                         fig.add_vline(
                             x=years_clean.max(),
                             line_dash="dash",
@@ -831,7 +750,6 @@ if df is not None:
                         
                         st.plotly_chart(fig, use_container_width=True)
                         
-                        # Display forecast values
                         forecast_df = pd.DataFrame({
                             'Year': future_years,
                             'Predicted Value': future_predictions
@@ -840,7 +758,6 @@ if df is not None:
                         with st.expander(f"📊 {country} - Detailed Forecast Values"):
                             st.dataframe(forecast_df)
                             
-                            # Calculate trend analysis
                             if len(values_clean) > 1:
                                 recent_trend = (values_clean[-1] - values_clean[0]) / len(values_clean)
                                 forecast_trend = (future_predictions[-1] - values_clean[-1]) / forecast_years
@@ -856,11 +773,9 @@ if df is not None:
                 else:
                     st.warning(f"Insufficient data for {country} (need at least 3 data points)")
             
-            # Global forecast summary
             st.subheader("🌍 Global Forecast Summary")
             
             if len(forecast_countries) > 1:
-                # Create comparison chart
                 comparison_data = []
                 
                 for country in forecast_countries:
@@ -875,17 +790,14 @@ if df is not None:
                         values_clean = values[valid_idx]
                         
                         if len(years_clean) >= 3:
-                            # Simple linear forecast for comparison
                             X = years_clean.reshape(-1, 1)
                             model = LinearRegression()
                             model.fit(X, values_clean)
                             
-                            # Predict for next 5 years
                             future_years = np.arange(years_clean.max() + 1, years_clean.max() + 6)
                             future_X = future_years.reshape(-1, 1)
                             future_predictions = model.predict(future_X)
                             
-                            # Store results
                             for year, pred in zip(future_years, future_predictions):
                                 comparison_data.append({
                                     'Country': country,
@@ -902,7 +814,6 @@ if df is not None:
                     fig.update_layout(height=500)
                     st.plotly_chart(fig, use_container_width=True)
         
-        # Scenario analysis
         st.subheader("🎭 Scenario Analysis")
         
         st.info("💡 **What-If Analysis**: Explore how different growth rates might affect future outcomes")
@@ -918,7 +829,7 @@ if df is not None:
         
         if st.button("🔄 Generate Scenarios"):
             if forecast_countries and selected_indicator:
-                scenario_country = forecast_countries[0]  # Use first selected country
+                scenario_country = forecast_countries[0]  
                 country_data = df_filtered[df_filtered['Entity'] == scenario_country].sort_values('Year')
                 
                 if len(country_data) > 0:
@@ -926,7 +837,6 @@ if df is not None:
                     latest_year = country_data['Year'].iloc[-1]
                     
                     if not np.isnan(latest_value):
-                        # Generate scenarios
                         future_years = np.arange(latest_year + 1, latest_year + forecast_years + 1)
                         
                         scenarios = {
@@ -949,9 +859,8 @@ if df is not None:
                                 current_value *= (1 + growth_rate)
                                 scenario_values.append(current_value)
                             
-                            scenarios[scenario] = scenario_values[1:]  # Remove initial value
+                            scenarios[scenario] = scenario_values[1:]  
                         
-                        # Create scenario plot
                         fig = go.Figure()
                         
                         colors = {'Optimistic': 'green', 'Realistic': 'blue', 'Pessimistic': 'red'}
@@ -965,7 +874,6 @@ if df is not None:
                                 line=dict(color=colors[scenario])
                             ))
                         
-                        # Add current value as starting point
                         fig.add_trace(go.Scatter(
                             x=[latest_year],
                             y=[latest_value],
@@ -983,7 +891,6 @@ if df is not None:
                         
                         st.plotly_chart(fig, use_container_width=True)
                         
-                        # Scenario summary table
                         scenario_summary = pd.DataFrame({
                             'Scenario': list(scenarios.keys()),
                             f'Value in {future_years[-1]}': [scenarios[s][-1] for s in scenarios.keys()],
@@ -994,7 +901,6 @@ if df is not None:
                         st.subheader("📋 Scenario Summary")
                         st.dataframe(scenario_summary)
 
-    # Additional insights and recommendations
     st.sidebar.markdown("---")
     st.sidebar.subheader("💡 Insights & Tips")
     st.sidebar.info("""
@@ -1013,7 +919,6 @@ if df is not None:
     - Use forecasting for future planning
     """)
     
-    # Footer
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #666666;'>
@@ -1024,7 +929,6 @@ if df is not None:
     """, unsafe_allow_html=True)
 
 else:
-    # Instructions for users when no data is loaded
     st.markdown("""
     ## 📋 Instructions
     
@@ -1073,7 +977,6 @@ else:
     - **Comprehensive Analytics**: From basic stats to advanced modeling
     """)
     
-    # Sample data preview
     st.markdown("""
     ## 📊 Expected Data Columns
     
