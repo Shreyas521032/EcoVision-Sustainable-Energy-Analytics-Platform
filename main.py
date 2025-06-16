@@ -924,7 +924,7 @@ if df is not None:
     <div style='text-align: center; color: #666666;'>
         <p>🌱 <strong>Sustainable Energy Analytics Dashboard</strong> 🌱</p>
         <p>💡 Empowering data-driven decisions for a sustainable future</p>
-        <p> Made with teamwork of Shreyas, Shaurya, Mahati and Prakriti </p>
+        <p> Made with teamwork of Shreyas, Shaurya, Mahati, Prakriti and Jay </p>
     </div>
     """, unsafe_allow_html=True)
 
