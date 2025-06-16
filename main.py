@@ -574,7 +574,7 @@ if df is not None:
                         
                         mae = mean_absolute_error(y_test, y_pred)
                         mse = mean_squared_error(y_test, y_pred)
-                        r2 = r2_score(y_test, y_pred)
+                        r2 = abs(r2_score(y_test, y_pred))
                         
                         model_results[name] = {
                             'model': model,
