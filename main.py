@@ -590,7 +590,6 @@ if df is not None:
                         st.write("**🎯 Model Performance Comparison:**")
                         performance_df = pd.DataFrame({
                             'Model': list(model_results.keys()),
-                            'MAE': [results['MAE'] for results in model_results.values()],
                             'MSE': [results['MSE'] for results in model_results.values()],
                             'R²': [results['R²'] for results in model_results.values()]
                         })
